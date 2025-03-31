@@ -18,7 +18,7 @@ async function sendMail(email, uniqueString) {
 
     var mailOptions
     let addr = process.env.IP
-    let sender = "Yash Sojitra"
+    let sender = "Interview Whiz"
     mailOptions = {
         from: sender,
         to: email,

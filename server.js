@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 
 app.use("/api/user", userRoutes);
 app.use("/api/verify", verifyRoutes);
-app.use("/api/interview", verifyRoutes);
+app.use("/api/interview", interviewRoutes);
 
 app.get("/", (req, res) => {
   res.send("hello from github actions");
