@@ -1,4 +1,4 @@
-const User = require("../models/User");
+const User = require("../models/user.Model");
 
 const mailVerify = async (req, res) => {
   const { uniqueString } = req.params;
