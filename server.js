@@ -1,8 +1,7 @@
-require("dotenv").config();
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const interviewRoutes = require("./routes/interviewRoutes")
+const interviewRoutes = require("./routes/interviewRoutes");
 const userRoutes = require("./routes/user");
 const verifyRoutes = require("./routes/verify");
 const { connect } = require("./db/connect");
