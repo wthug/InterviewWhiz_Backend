@@ -18,15 +18,6 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
-  uniqueString: {
-    type: String,
-    required: true,
-  },
-  isValid: {
-    type: Boolean,
-    default: false,
-    required: true,
-  },
   profilePic: {
     type: String,
     default: "",
@@ -34,13 +25,7 @@ const userSchema = new Schema({
 });
 
 //static signup method
-userSchema.statics.signup = async function (
-  username,
-  email,
-  password,
-  uniqueString,
-  isValid,
-) {
+userSchema.statics.signup = async function (username, email, password) {
   //validation
   if (!username || !email || !password) {
     throw Error("All fields must be filled");
@@ -67,8 +52,6 @@ userSchema.statics.signup = async function (
     username,
     email,
     password: hash,
-    uniqueString,
-    isValid,
   });
   return user;
 };

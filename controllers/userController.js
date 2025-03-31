@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const randString = require("../utils/randString");
 const sendMail = require("../utils/sendEmail");
 const { generateToken } = require("../utils/generateToken");
+const mailCache = require("../cache/mailcache");
 
 //login user
 const loginUser = async (req, res) => {
@@ -10,18 +11,17 @@ const loginUser = async (req, res) => {
 
   try {
     const user = await User.login(email, password);
-
-    if (user.isValid) {
-      generateToken(user._id, res);
-      res.status(200).json({
-        _id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        profilePic: user.profilePic,
-      });
-    } else {
-      res.status(422).json({ error: "email not verified" });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
     }
+
+    generateToken(user._id, res);
+    res.status(200).json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      profilePic: user.profilePic,
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -29,25 +29,29 @@ const loginUser = async (req, res) => {
 
 //signup user
 const signupUser = async (req, res) => {
+  console.log(req.body);
   const { username, email, password } = req.body;
 
   const uniqueString = randString();
-  const isValid = false;
+
+  mailCache.set(uniqueString, { username, email, password });
 
   try {
-    const user = await User.signup(
-      username,
-      email,
-      password,
-      uniqueString,
-      isValid,
-    );
+    // const user = await User.signup(
+    //   username,
+    //   email,
+    //   password,
+    //   uniqueString,
+    //   isValid,
+    // );
     const status = await sendMail(email, uniqueString);
     // console.log("verification status", status);
-    if (user) {
+    console.log(status);
+    if (status) {
       res.status(200).json({ info: "verification mail sent" });
     }
   } catch (error) {
+    console.log(error.message);
     res.status(400).json({ error: error.message });
   }
 };

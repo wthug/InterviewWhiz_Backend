@@ -5,12 +5,23 @@ const bodyParser = require("body-parser");
 const interviewRoutes = require("./routes/interviewRoutes");
 const userRoutes = require("./routes/user");
 const verifyRoutes = require("./routes/verify");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
 const { connect } = require("./db/connect");
+
 const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
+
 app.use(express.json());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+);
 
 // mongodb connection
 connect();

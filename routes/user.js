@@ -22,6 +22,6 @@ router.post("/logout", logout);
 router.put("/update-profile", requireAuth, updateProfile);
 
 //checkAuth
-router.post("/check", requireAuth, checkAuth);
+router.get("/check", requireAuth, checkAuth);
 
 module.exports = router;
