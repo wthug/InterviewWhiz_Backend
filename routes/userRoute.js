@@ -7,7 +7,7 @@ const {
   updateProfile,
   checkAuth,
 } = require("../controllers/userController");
-const requireAuth = require("../middleware/auth.middleware");
+const {requireAuth} = require("../middleware/auth.middleware");
 
 //login
 router.post("/login", loginUser);

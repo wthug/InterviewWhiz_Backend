@@ -2,7 +2,7 @@ const fs = require('fs'); // Add this line to import fs
 const path = require('path');
 const cloudinary = require('../lib/cloudinary');
 const { generatePDFReport } = require('../utils/pdfGenerator');
-const Interview = require('../Interview');
+const Interview = require('../models/interview');
 const { createChatCompletion } = require('../utils/openaiClient');
 const { cleanMarkdown } = require('../utils/cleanMarkdown');
 

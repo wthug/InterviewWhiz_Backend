@@ -1,5 +1,5 @@
 const express = require("express");
-const requireAuth = require("../middleware/auth.middleware");
+const { requireAuth } = require("../middleware/auth.middleware");
 const { generateAnalysis } = require("../controllers/analysisController");
 const { generateFeedback } = require("../controllers/feedbackController");
 const { generateQuestion } = require("../controllers/questionController");
@@ -15,3 +15,5 @@ router.post("/feedback", generateFeedback);
 
 //generate question
 router.post("/new-question", generateQuestion);
+
+module.exports = router;

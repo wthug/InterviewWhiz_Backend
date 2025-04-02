@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const interviewRoutes = require("./routes/interviewRoutes");
 const userRoutes = require("./routes/userRoute");
 const verifyRoutes = require("./routes/verify");
+const resourceRoutes = require("./routes/resourceRoutes")
 const forgetPassRoute = require('./routes/forgetPassRoute')
 const portalRoute = require('./routes/portal')
 const cookieParser = require("cookie-parser");
@@ -38,6 +39,7 @@ app.use("/api/reset", forgetPassRoute);
 app.use("/api/user", userRoutes);
 app.use("/api/verify", verifyRoutes);
 app.use("/api/interview", interviewRoutes);
+app.use("/api/resources", resourceRoutes);
 app.use("/api/portal", portalRoute);
 
 app.get("/", (req, res) => {
