@@ -36,4 +36,22 @@ const getUserInterviews = async (req, res) => {
   }
 };
 
-module.exports = { getUserInterviews, postInterviewData};
+const getLatestInterview = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const interview = await Interview.findOne({  user: userId }).sort({ createdAt: -1 });
+    // console.log("Interview", interview);
+
+    if (!interview) {
+      return res.status(404).json({ error: "No interviews found." });
+    }
+
+    return res.status(200).json({ interviewId: interview._id });
+  } catch (err) {
+    console.error("Error fetching latest interview:", err);
+    res.status(500).json({ error: "Failed to fetch latest interview." });
+  }
+};
+
+module.exports = { getUserInterviews, postInterviewData, getLatestInterview};
