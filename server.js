@@ -3,8 +3,9 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const interviewRoutes = require("./routes/interviewRoutes");
-const userRoutes = require("./routes/user");
+const userRoutes = require("./routes/userRoute");
 const verifyRoutes = require("./routes/verify");
+const forgetPassRoute = require('./routes/forgetPassRoute')
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { connect } = require("./db/connect");
@@ -32,6 +33,7 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use("/api/reset", forgetPassRoute);
 app.use("/api/user", userRoutes);
 app.use("/api/verify", verifyRoutes);
 app.use("/api/interview", interviewRoutes);
