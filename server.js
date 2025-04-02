@@ -39,11 +39,8 @@ app.use("/api/reset", forgetPassRoute);
 app.use("/api/user", userRoutes);
 app.use("/api/verify", verifyRoutes);
 app.use("/api/interview", interviewRoutes);
-<<<<<<< HEAD
 app.use("/api/resources", resourceRoutes);
-=======
 app.use("/api/portal", portalRoute);
->>>>>>> 7cfaf83198ecd3fd14158149b55037c68333d101
 
 app.get("/", (req, res) => {
   res.send("hello from github actions");
