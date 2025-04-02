@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const interviewRoutes = require("./routes/interviewRoutes");
 const userRoutes = require("./routes/user");
 const verifyRoutes = require("./routes/verify");
+const resourceRoutes = require("./routes/resourceRoutes")
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { connect } = require("./db/connect");
@@ -35,6 +36,7 @@ app.use((req, res, next) => {
 app.use("/api/user", userRoutes);
 app.use("/api/verify", verifyRoutes);
 app.use("/api/interview", interviewRoutes);
+app.use("/api/resources", resourceRoutes);
 
 app.get("/", (req, res) => {
   res.send("hello from github actions");
