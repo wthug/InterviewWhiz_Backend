@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const interviewSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', 
+    ref: 'User',
     required: true,
   },
   company: {
@@ -26,8 +26,13 @@ const interviewSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  pdfReport: { 
+  pdfReport: {
     type: String,
+    default: 'No File',
+  },
+  score: {
+    type: Number,
+    default: 0,
   },
   createdAt: {
     type: Date,

@@ -4,7 +4,9 @@ const requireAuth = require("../middleware/auth.middleware");
 
 const router = express.Router();
 
-router.get("/", requireAuth, getUserInterviews);
-router.post("/", requireAuth, postInterviewData);
+router.use(requireAuth)
+
+router.get("/", getUserInterviews);
+router.post("/", postInterviewData);
 
 module.exports = router;
