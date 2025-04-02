@@ -5,12 +5,9 @@ const bodyParser = require("body-parser");
 const interviewRoutes = require("./routes/interviewRoutes");
 const userRoutes = require("./routes/userRoute");
 const verifyRoutes = require("./routes/verify");
-<<<<<<< HEAD
 const resourceRoutes = require("./routes/resourceRoutes")
-=======
 const forgetPassRoute = require('./routes/forgetPassRoute')
 const portalRoute = require('./routes/portal')
->>>>>>> 7cfaf83198ecd3fd14158149b55037c68333d101
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { connect } = require("./db/connect");
