@@ -1,8 +1,8 @@
-const User = require("../models/user");
+const User = require("../models/userModel");
 const randString = require("../utils/randString");
-const sendMail = require("../utils/sendEmail");
+const {sendMail} = require("../utils/sendEmail");
 const { generateToken } = require("../utils/generateToken");
-const mailCache = require("../cache/mailcache");
+const { mailCache} = require("../cache/mailcache");
 const cloudinary = require("../lib/cloudinary");
 
 //login user
@@ -29,7 +29,7 @@ const loginUser = async (req, res) => {
 
 //signup user
 const signupUser = async (req, res) => {
-  console.log(req.body);
+  // console.log(ry);
   const { username, email, password } = req.body;
 
   const uniqueString = randString();
@@ -37,13 +37,7 @@ const signupUser = async (req, res) => {
   mailCache.set(uniqueString, { username, email, password });
 
   try {
-    // const user = await User.signup(
-    //   username,
-    //   email,
-    //   password,
-    //   uniqueString,
-    //   isValid,
-    // );
+    
     const status = await sendMail(email, uniqueString);
     // console.log("verification status", status);
     console.log(status);
