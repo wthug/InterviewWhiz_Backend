@@ -8,6 +8,7 @@ const verifyRoutes = require("./routes/verify");
 const resourceRoutes = require("./routes/resourceRoutes")
 const forgetPassRoute = require('./routes/forgetPassRoute')
 const portalRoute = require('./routes/portal')
+const resumeRoutes = require('./routes/resumeRoutes')
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { connect } = require("./db/connect");
@@ -41,6 +42,7 @@ app.use("/api/verify", verifyRoutes);
 app.use("/api/interview", interviewRoutes);
 app.use("/api/resources", resourceRoutes);
 app.use("/api/portal", portalRoute);
+app.use("/api/resume", resumeRoutes);
 
 app.get("/", (req, res) => {
   res.send("hello from github actions");
