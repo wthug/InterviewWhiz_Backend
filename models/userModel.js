@@ -22,6 +22,10 @@ const userSchema = new Schema({
     type: String,
     default: "",
   },
+  resumeUrl: {
+    type: String, // Store the path to the resume file
+    default: null
+  }
 });
 
 //static signup method
