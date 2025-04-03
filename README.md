@@ -10,35 +10,57 @@ Built with **Node.js, Express, MongoDB, and JWT authentication**, this project e
 ## 📁 **Project Structure**  
 
 ```
-Dev_Heat_Backend/
-│── controllers/        # Handles request logic  
-│   ├── mailController.js    # Manages email operations  
-│   ├── userController.js    # Handles user-related operations  
+Interview_Whiz_Backend/
+│── cache/             # Caching mechanisms
+│   ├── mailcache.js   # Cache for email operations
+│
+│── controllers/       # Handles request logic  
+│   ├── analysisController.js  # Analysis operations
+│   ├── feedbackController.js  # User feedback handling
+│   ├── interviewController.js # Interview-related operations
+│   ├── mailController.js      # Manages email operations  
+│   ├── questionController.js  # Question management
+│   ├── resetPass.js           # Password reset operations
+│   ├── resourceController.js  # Resource management
+│   ├── userController.js      # Handles user-related operations  
 │  
-│── db/                 # Database connection setup (if required)  
+│── db/                # Database connection setup  
+│   ├── connect.js     # Database connection logic
 │  
-│── middleware/         # Middleware functions  
-│   ├── authentication.js    # Auth middleware (JWT)  
+│── lib/               # External library integrations
+│   ├── cloudinary.js  # Cloudinary integration for media
+│
+│── middleware/        # Middleware functions  
+│   ├── auth.middleware.js    # Auth middleware (JWT)  
 │  
 │── models/            # Database models  
-│   ├── interview.js    # Schema for interview data  
-│   ├── userModel.js    # Schema for user data  
+│   ├── interview.js   # Schema for interview data  
+│   ├── resources.js   # Schema for resources
+│   ├── userModel.js   # Schema for user data  
 │  
 │── routes/            # API routes  
-│   ├── getInterviewdata.js    # Fetch interview data  
-│   ├── postInterviewdata.js   # Submit interview responses  
-│   ├── user.js                # User-related routes  
-│   ├── verify.js              # User verification logic  
+│   ├── forgetPassRoute.js    # Password reset routes
+│   ├── interviewRoutes.js    # Interview-related routes
+│   ├── portal.js             # Portal access routes
+│   ├── resourceRoutes.js     # Resource management routes
+│   ├── userRoute.js          # User-related routes  
+│   ├── verify.js             # User verification logic  
 │  
 │── utils/             # Helper functions  
-│   ├── randString.js    # Generates random strings  
-│   ├── sendEmail.js     # Email sending logic  
+│   ├── cleanMarkdown.js      # Markdown processing
+│   ├── generateOtp.js        # OTP generation
+│   ├── generateToken.js      # JWT token generation
+│   ├── openaiClient.js       # OpenAI API integration
+│   ├── pdfGenerator.js       # PDF creation utility
+│   ├── randString.js         # Generates random strings  
+│   ├── sendEmail.js          # Email sending logic  
 │  
 │── .env               # Environment variables (ignored in Git)  
 │── .gitignore         # Files to exclude from version control  
+│── package-lock.json  # Dependency lock file
 │── package.json       # Project metadata & dependencies  
 │── server.js          # Main server file (entry point)  
-│── README.md          # Documentation  
+│── README.md          # Documentation
 ```
 
 ---
@@ -71,6 +93,10 @@ JWT_SECRET=your_secret_key
 EMAIL_SERVICE=your_email_service  
 EMAIL_USER=your_email  
 EMAIL_PASS=your_email_password  
+CLOUDINARY_CLOUD_NAME=your_cloudinary_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+OPENAI_API_KEY=your_openai_api_key 
 ```
 
 ### **🔹 Running the Server**  
@@ -88,18 +114,40 @@ npm start
 ## 🎯 **API Endpoints**  
 
 ### **🔑 Authentication & User Management**  
-| Method | Endpoint              | Description            |
-|--------|----------------------|------------------------|
-| **POST** | `/api/user/register` | Register a new user   |
-| **POST** | `/api/user/login`    | User login            |
-| **GET**  | `/api/user/verify`   | Verify user account   |
-
-### **📋 Interview Data Handling**  
-| Method | Endpoint                 | Description                 |
+| Method | Endpoint                | Description                 |
 |--------|-------------------------|-----------------------------|
-| **GET**  | `/api/interview/data`   | Fetch interview questions  |
-| **POST** | `/api/interview/post`   | Submit interview answers   |
+| **POST** | `/api/user/register`   | Register new user           |
+| **POST** | `/api/user/login`      | User login                  |
+| **GET**  | `/api/user/profile`    | Get user profile            |
+| **PUT**  | `/api/user/profile`    | Update user profile         |
+| **GET**  | `/api/verify`          | Verify user account         |
+| **POST** | `/api/reset/request`   | Request password reset      |
+| **POST** | `/api/reset/verify`    | Verify reset OTP            |
+| **POST** | `/api/reset/password`  | Set new password            |
 
+### **📋 Interview Management**  
+| Method | Endpoint                      | Description                      |
+|--------|-------------------------------|----------------------------------|
+| **GET**  | `/api/interview/questions`   | Get interview questions          |
+| **POST** | `/api/interview/submit`      | Submit interview responses       |
+| **GET**  | `/api/interview/results`     | Get interview results            |
+| **GET**  | `/api/interview/history`     | Get past interview history       |
+| **POST** | `/api/interview/feedback`    | Submit feedback on interview     |
+
+### **📚 Resource Management**  
+| Method | Endpoint                      | Description                      |
+|--------|-------------------------------|----------------------------------|
+| **GET**  | `/api/resources/all`         | Get all learning resources       |
+| **GET**  | `/api/resources/category/:id`| Get resources by category        |
+| **GET**  | `/api/resources/:id`         | Get specific resource            |
+| **POST** | `/api/resources/download`    | Generate and download resource   |
+
+### **🖥️ Portal Access**  
+| Method | Endpoint                      | Description                      |
+|--------|-------------------------------|----------------------------------|
+| **GET**  | `/api/portal/dashboard`      | Access user dashboard            |
+| **GET**  | `/api/portal/analytics`      | Get user analytics               |
+| **GET**  | `/api/portal/recommendations`| Get recommended resources        |
 ---
 
 ## 🛠 **Built With**  
@@ -108,6 +156,10 @@ npm start
 📦 **MongoDB & Mongoose** - Database & ORM  
 🔐 **JWT** - Secure authentication  
 📩 **Nodemailer** - Email service  
+☁️ Cloudinary - Media management
+🤖 OpenAI - AI-powered analysis
+📄 PDF Generation - Resource creation
+🛠 dotenv - Environment variable management
 🛠 **dotenv** - Environment variable management  
 
 ---
