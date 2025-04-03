@@ -1,4 +1,4 @@
-const mailCache = require("../cache/mailcache");
+const {mailCache} = require("../cache/mailcache");
 const User = require("../models/userModel");
 
 const mailVerify = async (req, res) => {
