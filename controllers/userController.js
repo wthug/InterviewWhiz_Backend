@@ -12,7 +12,7 @@ const loginUser = async (req, res) => {
   try {
     const user = await User.login(email, password);
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ error: "Invalid credentials" });
     }
 
     generateToken(user._id, res);
@@ -46,7 +46,6 @@ const signupUser = async (req, res) => {
     // );
     const status = await sendMail(email, uniqueString);
     // console.log("verification status", status);
-    console.log(status);
     if (status) {
       res.status(200).json({ info: "verification mail sent" });
     }
