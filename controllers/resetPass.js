@@ -30,7 +30,7 @@ const sendOtp= async(req,res )=> {
   
 };
 
-const varifyOtp = async (req,res)=>{
+const verifyOtp = async (req,res)=>{
   const {email,otp}=req.body
   
   try {
@@ -38,12 +38,13 @@ const varifyOtp = async (req,res)=>{
     if(!user) {
       return res.status(404).json({error:"OTP expired"});
     }
-    console.log(user.otp)
-
     if(user.otp===otp){
-      return res.status(200).json({message:"OTP varification successful"});
+      return res.status(200).json({message:"OTP verification successful"});
     }
-    else return res.status(400).json({error:"Entre valid OTP"})
+    else {
+      console.log("error")
+      return res.status(400).json({error:"Entre valid OTP"})
+    }
   } catch (err) {
     return res.status(400).json({error:err.message});
   }
@@ -62,4 +63,4 @@ const resetPassword = async(req,res) => {
   
 }
 
-module.exports = {sendOtp,varifyOtp,resetPassword};
+module.exports = {sendOtp,verifyOtp,resetPassword};
