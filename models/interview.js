@@ -18,7 +18,7 @@ const interviewSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  language: {
+  prefferedLanguage: {
     type: String,
     required: true,
   },
