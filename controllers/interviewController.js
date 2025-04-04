@@ -2,13 +2,13 @@ const Interview = require("../models/interview");
 
 const postInterviewData = async (req, res) => {
   try {
-    const { company, role, experience, language, codingRound } = req.body;
+    const { company, role, experience, prefferedLanguage, codingRound } = req.body;
     const newInterview = new Interview({
       user: req.user.id,
       company,
       role,
       experience,
-      language,
+      prefferedLanguage,
       codingRound,
     });
 
