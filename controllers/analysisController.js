@@ -8,26 +8,43 @@ const { cleanMarkdown } = require('../utils/cleanMarkdown');
 
 exports.generateAnalysis = async (req, res) => {
   try {
-    const { feedback, interviewId } = req.body;
+    const { feedback, interviewId, formData } = req.body;
+    const {
+      name,
+      role,
+      company,
+      experience,
+      prefferedLanguage,
+      codingRound,
+    } = formData || {};
 
     const systemContext =
       "Assume the role of an experienced interviewer with 20+ years of experience. Provide a detailed markdown interview analysis report.";
 
-    const prompt = `
-    Using the candidate's performance data and the following feedback:
-    "${feedback}"
-
-    Please provide a **Detailed Interview Analysis Report** in markdown with the following sections:
-    1. Areas Tested and Scores: List each technical area (e.g., Data Structures, Algorithms, System Design, etc.) with an individual score out of 10.
-    2. Overall Score: Provide an overall score out of 10.
-    3. Strength Topics
-    4. Weakness Topics
-    5. Areas for Improvement
-    6. Interviewer Comments
-    7. Additional Comments
-    8. Technical Topic-wise Score Data as JSON
-    `;
-
+      const prompt = `
+      Using the following candidate details and performance feedback, provide a **complete markdown report**.
+      
+      👤 **Candidate Details**
+      - Name: ${name}
+      - Role: ${role}
+      - Company: ${company}
+      - Experience: ${experience} years
+      - Preferred Language: ${prefferedLanguage}
+      - Interview Type: ${codingRound ? "Technical" : "Behavioural"}
+      
+      📝 **Feedback Summary**
+      ${feedback}
+      
+      📄 **Generate the following sections in Markdown:**
+      1. Areas Tested and Scores: List each technical area (e.g., Data Structures, Algorithms, System Design, etc.) with an individual score out of 10.
+      2. Overall Score: Provide an overall score out of 10.
+      3. Strength Topics
+      4. Weakness Topics
+      5. Areas for Improvement
+      6. Interviewer Comments
+      7. Additional Comments
+      8. Technical Topic-wise Score Data 
+      `;
     // Get AI response
     const content = await createChatCompletion(systemContext, prompt);
     console.log("Response from AI:", content);
