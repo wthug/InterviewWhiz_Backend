@@ -1,36 +1,25 @@
-const { createChatCompletion } = require("../utils/openaiClient");
+const { createChatCompletionWithHistory } = require("../utils/openaiClient");
 
 exports.generateChatResponse = async (req, res) => {
   try {
     const { messages } = req.body;
 
     if (!Array.isArray(messages)) {
-      return res.status(400).json({ error: "Messages must be a valid array." });
+      return res.status(400).json({ error: "'messages' must be a valid array." });
     }
 
-    const systemMessage = messages.find(
-      (msg) => msg.role === "system" || msg.role === "developer"
-    );
+    const hasSystem = messages.some((msg) => msg.role === "system" || msg.role === "assistant");
+    const hasUser = messages.some((msg) => msg.role === "user");
 
-    const userMessages = messages.filter((msg) => msg.role === "user");
-    const userMessage = userMessages[userMessages.length - 1];
-
-    if (!systemMessage || !userMessage) {
-      return res
-        .status(400)
-        .json({ error: "Both system and user messages are required." });
+    if (!hasSystem || !hasUser) {
+      return res.status(400).json({ error: "Both system and user messages are required." });
     }
 
-    const reply = await createChatCompletion(
-      systemMessage.content,
-      userMessage.content
-    );
+    const reply = await createChatCompletionWithHistory(messages);
+
 
     return res.json({ reply });
   } catch (error) {
-    console.error("OpenAI Chat Error:", error?.response?.data || error.message);
-    return res
-      .status(500)
-      .json({ error: "Failed to generate chat response." });
+    return res.status(500).json({ error: "Failed to generate chat response." });
   }
 };
