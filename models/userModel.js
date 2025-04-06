@@ -29,6 +29,10 @@ const userSchema = new Schema({
   resumeUrl: {
     type: String, // Store the path to the resume file
     default: null
+  },
+  atsScore:{
+    type:Number,
+    default:0
   }
 });
 

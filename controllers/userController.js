@@ -83,6 +83,29 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const updateAtsScore = async (req, res) => {
+  try {
+    console.log(req.body);
+    const { atsScore } = req.body;
+    const userId = req.user._id;
+
+    if (atsScore === undefined || isNaN(atsScore)) {
+      return res.status(400).json({ message: "ATS Score must be a valid number" });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { atsScore },
+      { new: true }
+    );
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.log("Error updating ATS score:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 const checkAuth = async (req, res) => {
   try {
     res.status(200).json(req.user);
@@ -92,4 +115,4 @@ const checkAuth = async (req, res) => {
   }
 };
 
-module.exports = { loginUser, signupUser, logout, checkAuth, updateProfile };
+module.exports = { loginUser, signupUser, logout, checkAuth, updateProfile, updateAtsScore};

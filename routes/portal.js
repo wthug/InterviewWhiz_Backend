@@ -10,10 +10,10 @@ router.use(requireAuth)
 //analysis route
 router.post("/analysis", generateAnalysis);
 
-//feedback route
-router.post("/feedback", generateFeedback);
+// //feedback route
+// router.post("/feedback", generateFeedback);
 
-//generate question
-router.post("/new-question", generateQuestion);
+// //generate question
+// router.post("/new-question", generateQuestion);
 
 module.exports = router;
