@@ -1,0 +1,59 @@
+name: Deploy Node Application
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Login to docker hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker Image
+        run: docker build -t wthug/interviewviz-nodejs .
+
+      - name: Publish Image to Docker hub
+        run: docker push wthug/interviewviz-nodejs:latest
+
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Get Host IP Address
+        run: |
+          HOST_IP=$(curl -s ifconfig.me)
+          echo "Host IP Address: $HOST_IP"
+          echo "HOST_IP=$HOST_IP" >> $GITHUB_ENV
+
+      - name: stopping previous running container
+        run: docker stop nodejs-app-container
+
+      - name: removing previous running container
+        run: docker rm nodejs-app-container
+
+      - name: Pull image from docker hub
+        run: docker pull wthug/interviewviz-nodejs:latest
+
+      - name: run docker container
+        run: docker run -d -p 3001:3001 \
+          --name nodejs-app-container \
+          -e MONGO_URI='${{secrets.MONGO_URI}}' \
+          -e PORT=${{secrets.PORT}} \
+          -e EMAIL_SERVICE='${{secrets.EMAIL_SERVICE}}' \
+          -e EMAIL_USER='${{secrets.EMAIL_USER}}' \
+          -e EMAIL_PASS='${{secrets.EMAIL_PASS}}' \
+          -e JWT_SECRET='${{secrets.JWT_SECRET}}' \
+          -e CLOUDINARY_CLOUD_NAME='${{secrets.CLOUDINARY_CLOUD_NAME}}' \
+          -e CLOUDINARY_API_KEY='${{secrets.CLOUDINARY_API_KEY}}' \
+          -e CLOUDINARY_API_SECRET='${{secrets.CLOUDINARY_API_SECRET}}' \
+          -e OPENAI_API_KEY='${{secrets.OPENAI_API_KEY}}' \
+          -e OPENAI_API_URL='${{secrets.OPENAI_API_URL}}' \
+          -e IP='${{env.HOST_IP}}' \
+          wthug/interviewviz-nodejs
