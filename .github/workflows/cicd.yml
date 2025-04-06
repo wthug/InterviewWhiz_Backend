@@ -45,7 +45,8 @@ jobs:
         run: docker pull wthug/interviewviz-nodejs:latest
 
       - name: run docker container
-        run: docker run -d -p 3001:3001 \
+        run: |
+          docker run -d -p 3001:3001 \
           --name nodejs-app-container \
           -e MONGO_URI='${{secrets.MONGO_URI}}' \
           -e PORT=${{secrets.PORT}} \
