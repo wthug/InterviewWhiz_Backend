@@ -5,25 +5,27 @@ const bodyParser = require("body-parser");
 const interviewRoutes = require("./routes/interviewRoutes");
 const userRoutes = require("./routes/userRoute");
 const verifyRoutes = require("./routes/verify");
-const resourceRoutes = require("./routes/resourceRoutes")
-const forgetPassRoute = require('./routes/forgetPassRoute')
-const portalRoute = require('./routes/portal')
-const resumeRoutes = require('./routes/resumeRoutes')
-const chatRoutes = require('./routes/chatRoutes')
+const resourceRoutes = require("./routes/resourceRoutes");
+const forgetPassRoute = require("./routes/forgetPassRoute");
+const portalRoute = require("./routes/portal");
+const resumeRoutes = require("./routes/resumeRoutes");
+const chatRoutes = require("./routes/chatRoutes");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const { connect } = require("./db/connect");
 
 const PORT = process.env.PORT || 3000;
 
+app.set("trust proxy", true);
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(   
+app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "http://ec2-52-66-131-35.ap-south-1.compute.amazonaws.com",
     credentials: true,
   }),
 );
