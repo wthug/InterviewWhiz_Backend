@@ -1,32 +1,55 @@
 const Resource = require("../models/resources"); // Import the schema
+const cloudinary = require("../lib/cloudinary");
+const mongoose = require("mongoose");
 
 // Fetch all resources
 exports.getAllResources = async (req, res) => {
   try {
     const resources = await Resource.find();
-    res.json(resources);
+    // console.log(resources)
+    return res.status(200).json(resources);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching resources", error });
+    return res.status(500).json({ message: "Error fetching resources", error });
   }
 };
 
 // Add a new resource (Admin only)
 exports.addResource = async (req, res) => {
   try {
-    const { title, description, icon, link } = req.body;
-    const newResource = new Resource({ title, description, icon, link });
+    const { title, description, thumbnail, link } = req.body;
+    if(!title || !description || !thumbnail || !link){
+      return res.status(400).json({message:"all feilds are requires"});
+    }
+    const uploadResponse = await cloudinary.uploader.upload(thumbnail);
+    const newResource = new Resource({ title, description, thumbnail:uploadResponse.secure_url, link });
     await newResource.save();
-    res.status(201).json({ message: "Resource added successfully" });
+    return res.status(201).json({ message: "Resource added successfully",newResource });
   } catch (error) {
-    res.status(500).json({ message: "Error adding resource", error });
+    // console.log(error)
+    return res.status(500).json({ message: "Error adding resource", error });
   }
 };
 
 // Update a resource
 exports.updateResource = async (req, res) => {
+  const {title,description,link,thumbnail} = req.body;
   try {
-    await Resource.findByIdAndUpdate(req.params.id, req.body);
-    res.json({ message: "Resource updated" });
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid ID format" });
+    }
+    if(thumbnail!=='') {
+      const uploadResponse = await cloudinary.uploader.upload(thumbnail);
+      await Resource.findByIdAndUpdate(id,{title,description,link,thumbnail:uploadResponse.secure_url});
+    }
+    else{
+      await Resource.findByIdAndUpdate(id,{title,description,link});
+    }
+    const resource=await Resource.findById(id);
+    if(!resource){
+      return res.status(404).json({message:"No such resource exist"});
+    }
+    res.status(200).json({ message: "Resource updated",resource });
   } catch (error) {
     res.status(500).json({ message: "Error updating resource", error });
   }
@@ -35,7 +58,11 @@ exports.updateResource = async (req, res) => {
 // Delete a resource
 exports.deleteResource = async (req, res) => {
   try {
-    await Resource.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid ID format" });
+    }
+    await Resource.findByIdAndDelete(id);
     res.json({ message: "Resource deleted" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting resource", error });
