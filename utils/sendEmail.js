@@ -29,13 +29,13 @@ async function sendMail(email, uniqueString) {
   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
     <div style="background: linear-gradient(135deg, #0062cc 0%, #0096ff 100%); padding: 30px 20px; text-align: center;">
       <div style="font-size: 28px; font-weight: bold; color: white; letter-spacing: 1px;">Interview <span style="color: #ffe74c;">Whiz</span></div>
-      <img src="/api/placeholder/100/100" alt="Interview Whiz Logo" style="margin-top: 10px;" />
+      
     </div>
     
     <div style="padding: 30px 40px;">
-      <h2 style="color: #0062cc; margin-top: 0;">Welcome to Interview Whiz!</h2>
+      <h2 style="color: #0062cc; margin-top: 0;">Welcome to MockXpert!</h2>
       <p>Hello future interview champion,</p>
-      <p>Thank you for joining Interview Whiz - your personal interview preparation assistant. We're excited to help you ace your next interview and land your dream job!</p>
+      <p>Thank you for joining MockXpert - your personal interview preparation assistant. We're excited to help you ace your next interview and land your dream job!</p>
       
       <div style="background-color: #f0f8ff; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #0096ff;">
         <strong>Did you know?</strong> Candidates who prepare with structured interview practice are 2.6x more likely to receive job offers.
@@ -56,7 +56,7 @@ async function sendMail(email, uniqueString) {
       
       <p>If you have any questions, our support team is ready to help you succeed!</p>
       
-      <p>Best regards,<br>The Interview Whiz Team</p>
+      <p>Best regards,<br>The MockXpert Team</p>
     </div>
     
     <div style="background-color: #f5f5f5; padding: 20px; text-align: center; color: #666; font-size: 14px; border-top: 1px solid #eaeaea;">
@@ -66,10 +66,10 @@ async function sendMail(email, uniqueString) {
         <a href="#" style="display: inline-block; margin: 0 8px; color: #0062cc; font-size: 20px; text-decoration: none;">📸</a>
         <a href="#" style="display: inline-block; margin: 0 8px; color: #0062cc; font-size: 20px; text-decoration: none;">🐦</a>
       </div>
-      <p style="margin: 5px 0;">Interview Whiz Inc.</p>
-      <p style="margin: 5px 0;">Founded by Jyotish | Kamrej</p>
-      <p style="margin: 5px 0;">&copy; 2025 Interview Whiz. All rights reserved.</p>
-      <p style="margin: 5px 0;"><small>If you didn't sign up for Interview Whiz, please disregard this email.</small></p>
+      <p style="margin: 5px 0;">MockXpert Inc.</p>
+      <p style="margin: 5px 0;">Founded by navJyotish | Kamrej</p>
+      <p style="margin: 5px 0;">&copy; 2025 MockXpert. All rights reserved.</p>
+      <p style="margin: 5px 0;"><small>If you didn't sign up for MockXpert, please disregard this email.</small></p>
     </div>
   </div>
 </div>
