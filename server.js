@@ -25,7 +25,10 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "http://ec2-52-66-131-35.ap-south-1.compute.amazonaws.com",
+    origin: [
+      "http://ec2-52-66-131-35.ap-south-1.compute.amazonaws.com",
+      "http://localhost:5173",
+    ],
     credentials: true,
   }),
 );
