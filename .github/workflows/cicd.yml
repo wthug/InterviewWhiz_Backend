@@ -46,7 +46,7 @@ jobs:
 
       - name: run docker container
         run: |
-          docker run -d -p 3001:3001 \
+          docker run -d -p 3000:3000 \
           --name nodejs-app-container \
           -e MONGO_URI='${{secrets.MONGO_URI}}' \
           -e PORT=${{secrets.PORT}} \
