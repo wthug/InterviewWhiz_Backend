@@ -3,6 +3,8 @@ const User = require("../models/userModel");
 
 const requireAuth = async (req, res, next) => {
   try {
+    console.log("Request path:", req.path);
+    console.log("Cookies received:", req.cookies);
     const token = req.cookies.jwt;
     if (!token) {
       return res
