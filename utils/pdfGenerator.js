@@ -1,31 +1,65 @@
-// backend/utils/pdfGenerator.js
-
 const { jsPDF } = require("jspdf");
 const path = require("path");
 const fs = require("fs");
+const { ChartJSNodeCanvas } = require("chartjs-node-canvas");
 
-const generatePDFReport = async (reportText, score) => {
+const width = 800;
+const height = 400;
+const chartCanvas = new ChartJSNodeCanvas({ width, height });
+
+const generatePDFReport = async (reportText, score, formData = {}) => {
+  const {
+    name = "N/A",
+    role = "N/A",
+    company = "N/A",
+    experience = "N/A",
+    prefferedLanguage = "N/A",
+    codingRound = false,
+  } = formData;
+
   const doc = new jsPDF();
   const maxWidth = 180;
   const xPos = 10;
   let yPos = 10;
 
-  // Set up PDF document
+  // === TITLE ===
   doc.setFont("times", "bold");
   doc.setFontSize(22);
   doc.text("Interview Summary Report", xPos, yPos);
-  yPos += 10;
+  yPos += 12;
 
+  // === OVERALL SCORE ===
   doc.setFont("times", "normal");
   doc.setFontSize(14);
-  const basicDetails = `Score: ${score}/10`;
-  doc.text(doc.splitTextToSize(basicDetails, maxWidth), xPos, yPos);
-  yPos += 30;
-
-  doc.setFont("times", "bold");
-  doc.text("Feedback Analysis", xPos, yPos);
+  doc.text(`Overall Score: ${score}/10`, xPos, yPos);
   yPos += 10;
 
+  // === BASIC DETAILS ===
+  const details = [
+    `Candidate Name: ${name}`,
+    `Role: ${role}`,
+    `Company: ${company}`,
+    `Experience: ${experience} year(s)`,
+    `Preferred Language: ${prefferedLanguage}`,
+    `Interview Type: ${codingRound ? "Technical" : "Behavioural"}`,
+  ];
+
+  doc.setFontSize(12);
+  details.forEach((line) => {
+    doc.text(line, xPos, yPos);
+    yPos += 6;
+  });
+
+  yPos += 4; // spacing before next section
+
+  // === FEEDBACK SECTION ===
+  doc.setFont("times", "bold");
+  doc.setFontSize(16);
+  doc.text("Feedback Analysis", xPos, yPos);
+  yPos += 8;
+
+  doc.setFont("times", "normal");
+  doc.setFontSize(12);
   const lines = doc.splitTextToSize(reportText, maxWidth);
   lines.forEach((line) => {
     if (yPos > 270) {
@@ -33,31 +67,85 @@ const generatePDFReport = async (reportText, score) => {
       yPos = 10;
     }
     doc.text(line, xPos, yPos);
-    yPos += 7;
+    yPos += 6;
   });
 
-  // Generate PDF as ArrayBuffer
-  const pdfArrayBuffer = doc.output("arraybuffer");
+  // === SCORE CHART SECTION ===
+  const topicScoresSection = reportText.match(
+    /Technical Topic-wise Score Data\s*([\s\S]*)/i,
+  );
+  let topicScores = {};
 
-  // Convert ArrayBuffer to Buffer
-  const pdfBuffer = Buffer.from(pdfArrayBuffer);
-
-  // Set the directory to save the PDF
-  const pdfDir = path.join(__dirname, "..", "uploads");
-  if (!fs.existsSync(pdfDir)) {
-    fs.mkdirSync(pdfDir);
+  if (topicScoresSection) {
+    const lines = topicScoresSection[1]
+      .split("\n")
+      .filter((line) => line.includes(":"));
+    lines.forEach((line) => {
+      const [topic, scoreStr] = line.split(":").map((x) => x.trim());
+      const scoreVal = parseFloat(scoreStr);
+      if (!isNaN(scoreVal)) {
+        topicScores[topic] = scoreVal;
+      }
+    });
   }
 
-  // Define the file path to save
+  if (Object.keys(topicScores).length > 0) {
+    const chartBuffer = await chartCanvas.renderToBuffer({
+      type: "bar",
+      data: {
+        labels: Object.keys(topicScores),
+        datasets: [
+          {
+            label: "Score",
+            data: Object.values(topicScores),
+            backgroundColor: "rgba(54, 162, 235, 0.6)",
+            borderColor: "rgba(54, 162, 235, 1)",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        scales: {
+          y: { beginAtZero: true, max: 10 },
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: "Topic-wise Performance",
+          },
+        },
+      },
+    });
+
+    const chartBase64 = chartBuffer.toString("base64");
+
+    doc.addPage();
+    doc.setFont("times", "bold");
+    doc.setFontSize(16);
+    doc.text("Visual Performance Analysis", xPos, 20);
+    doc.addImage(chartBase64, "PNG", xPos, 30, 180, 90);
+  }
+
+  // === SIGNATURE SECTION ===
+  doc.addPage();
+  doc.setFont("times", "italic");
+  doc.setFontSize(16);
+  doc.text("Best Wishes for your Interview", xPos, 100);
+  doc.setFont("times", "bold");
+  doc.setFontSize(18);
+  doc.text("– mockXpert Team", xPos, 115);
+
+  // === SAVE PDF ===
+  const pdfArrayBuffer = doc.output("arraybuffer");
+  const pdfBuffer = Buffer.from(pdfArrayBuffer);
+  const pdfDir = path.join(__dirname, "..", "uploads");
+  if (!fs.existsSync(pdfDir)) fs.mkdirSync(pdfDir);
   const fileName = `interview-report-${Date.now()}.pdf`;
   const filePath = path.join(pdfDir, fileName);
-
-  // Save the PDF to the file system
   fs.writeFileSync(filePath, pdfBuffer);
-
   console.log(`PDF saved to: ${filePath}`);
 
-  return filePath; // Send the file path so it can be uploaded to Cloudinary
+  return filePath;
 };
 
 module.exports = { generatePDFReport };
