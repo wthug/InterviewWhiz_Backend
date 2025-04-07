@@ -1,9 +1,9 @@
-const { createChatCompletion } = require('../utils/openaiClient'); // Use your existing OpenAI client
-const cloudinary = require('../lib/cloudinary');
-const User = require('../models/userModel');
-const fs = require('fs');
-const path = require('path');
-const { cleanMarkdown } = require('../utils/cleanMarkdown');
+const { createChatCompletion } = require("../utils/openaiClient"); // Use your existing OpenAI client
+const cloudinary = require("../lib/cloudinary");
+const User = require("../models/userModel");
+const fs = require("fs");
+const path = require("path");
+const { cleanMarkdown } = require("../utils/cleanMarkdown");
 
 exports.uploadResume = async (req, res) => {
   try {
@@ -13,23 +13,36 @@ exports.uploadResume = async (req, res) => {
 
     const resumeFile = req.files.resume;
 
-    if (resumeFile.mimetype !== 'application/pdf') {
+    if (resumeFile.mimetype !== "application/pdf") {
       return res.status(400).json({ message: "Only PDF files are allowed." });
     }
+    // Set temp directory
+    const uploadsDir = path.join(__dirname, "..", "uploads");
 
-    const tempFilePath = path.join(__dirname, '..', 'uploads', `${Date.now()}-${resumeFile.name}`);
+    // Ensure the uploads directory exists
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    // Construct file path
+    const tempFilePath = path.join(
+      uploadsDir,
+      `${Date.now()}-${resumeFile.name}`,
+    );
 
     resumeFile.mv(tempFilePath, async (err) => {
       if (err) {
         console.error("Error moving file:", err);
-        return res.status(500).json({ message: "Error moving the uploaded resume." });
+        return res
+          .status(500)
+          .json({ message: "Error moving the uploaded resume." });
       }
 
       console.log("Resume file saved temporarily at:", tempFilePath);
 
       try {
         const uploadResult = await cloudinary.uploader.upload(tempFilePath, {
-          resource_type: 'raw', 
+          resource_type: "raw",
           public_id: `resumes/${req.user.id}-${Date.now()}`,
         });
 
@@ -52,26 +65,34 @@ exports.uploadResume = async (req, res) => {
 
           res.status(200).json({
             message: "Resume uploaded successfully",
-            resumeUrl: uploadResult.secure_url,  
+            resumeUrl: uploadResult.secure_url,
           });
         } else {
-          return res.status(500).json({ message: "Error uploading resume to Cloudinary" });
+          return res
+            .status(500)
+            .json({ message: "Error uploading resume to Cloudinary" });
         }
-
       } catch (cloudinaryError) {
         console.error("Cloudinary upload error:", cloudinaryError);
         fs.unlink(tempFilePath, (err) => {
           if (err) {
-            console.error("Error deleting temporary file after Cloudinary error:", err);
+            console.error(
+              "Error deleting temporary file after Cloudinary error:",
+              err,
+            );
           } else {
-            console.log("Temporary file deleted after Cloudinary error:", tempFilePath);
+            console.log(
+              "Temporary file deleted after Cloudinary error:",
+              tempFilePath,
+            );
           }
         });
 
-        res.status(500).json({ message: "Error uploading resume to Cloudinary." });
+        res
+          .status(500)
+          .json({ message: "Error uploading resume to Cloudinary." });
       }
     });
-
   } catch (error) {
     console.error("Error uploading resume:", error);
     res.status(500).json({ message: "Error uploading resume." });
@@ -82,10 +103,11 @@ exports.calculateATS = async (req, res) => {
     const { resumeUrl } = req.body;
 
     if (!resumeUrl) {
-      return res.status(400).json({ error: 'Resume URL is required.' });
+      return res.status(400).json({ error: "Resume URL is required." });
     }
 
-    const systemPrompt = "Assume the role of an ATS system. Evaluate the resume below and calculate the ATS score out of 100. Give only Numeric value i.e the Overall ATS Score.";
+    const systemPrompt =
+      "Assume the role of an ATS system. Evaluate the resume below and calculate the ATS score out of 100. Give only Numeric value i.e the Overall ATS Score.";
     const userPrompt = `Resume content: ${resumeUrl}`;
 
     // Get ATS score using OpenAI API
@@ -94,12 +116,12 @@ exports.calculateATS = async (req, res) => {
     console.log(atsScore);
 
     res.status(200).json({
-      message: 'ATS score calculated successfully.',
+      message: "ATS score calculated successfully.",
       atsScore: atsScore,
     });
   } catch (error) {
-    console.error('Error calculating ATS:', error);
-    res.status(500).json({ message: 'Failed to calculate ATS score.' });
+    console.error("Error calculating ATS:", error);
+    res.status(500).json({ message: "Failed to calculate ATS score." });
   }
 };
 
@@ -108,22 +130,23 @@ exports.getOverallComments = async (req, res) => {
     const { resumeUrl } = req.body;
 
     if (!resumeUrl) {
-      return res.status(400).json({ error: 'Resume URL is required.' });
+      return res.status(400).json({ error: "Resume URL is required." });
     }
 
-    const systemPrompt = "Assume the role of a recruiter. Provide overall comments on the resume below, such as its content quality, formatting, and technical relevance.";
+    const systemPrompt =
+      "Assume the role of a recruiter. Provide overall comments on the resume below, such as its content quality, formatting, and technical relevance.";
     const userPrompt = `Resume content: ${resumeUrl}`;
 
     const feedback = await createChatCompletion(systemPrompt, userPrompt);
     console.log(feedback);
     const cleanedFeedback = cleanMarkdown(feedback);
     res.status(200).json({
-      message: 'Resume feedback generated successfully.',
+      message: "Resume feedback generated successfully.",
       feedback: cleanedFeedback,
     });
   } catch (error) {
-    console.error('Error generating feedback:', error);
-    res.status(500).json({ message: 'Failed to generate resume feedback.' });
+    console.error("Error generating feedback:", error);
+    res.status(500).json({ message: "Failed to generate resume feedback." });
   }
 };
 
@@ -133,21 +156,27 @@ exports.getImprovementTips = async (req, res) => {
     const { resumeUrl } = req.body;
 
     if (!resumeUrl) {
-      return res.status(400).json({ error: 'Resume URL is required.' });
+      return res.status(400).json({ error: "Resume URL is required." });
     }
 
-    const systemPrompt = "Assume the role of a technical recruiter. Provide tips to improve the resume for the technical job market.";
+    const systemPrompt =
+      "Assume the role of a technical recruiter. Provide tips to improve the resume for the technical job market.";
     const userPrompt = `Resume content: ${resumeUrl}`;
 
-    const improvementTips = await createChatCompletion(systemPrompt, userPrompt);
+    const improvementTips = await createChatCompletion(
+      systemPrompt,
+      userPrompt,
+    );
     console.log(improvementTips);
     const cleanedTips = cleanMarkdown(improvementTips);
     res.status(200).json({
-      message: 'Resume improvement tips generated successfully.',
+      message: "Resume improvement tips generated successfully.",
       improvementTips: cleanedTips,
     });
   } catch (error) {
-    console.error('Error generating improvement tips:', error);
-    res.status(500).json({ message: 'Failed to generate resume improvement tips.' });
+    console.error("Error generating improvement tips:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to generate resume improvement tips." });
   }
 };
