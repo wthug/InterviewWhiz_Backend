@@ -35,6 +35,11 @@ jobs:
           echo "Host IP Address: $HOST_IP"
           echo "HOST_IP=$HOST_IP" >> $GITHUB_ENV
 
+      - name: Install python
+        run: |
+          sudo apt-get update
+          sudo apt-get install python3 -y
+
       - name: stopping previous running container
         run: docker stop nodejs-app-container || true
 

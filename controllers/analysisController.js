@@ -1,29 +1,23 @@
-const fs = require('fs'); // Add this line to import fs
-const path = require('path');
-const cloudinary = require('../lib/cloudinary');
-const { generatePDFReport } = require('../utils/pdfGenerator');
-const Interview = require('../models/interview');
-const { createChatCompletion } = require('../utils/openaiClient');
-const { cleanMarkdown } = require('../utils/cleanMarkdown');
+const fs = require("fs"); // Add this line to import fs
+const path = require("path");
+const cloudinary = require("../lib/cloudinary");
+const { generatePDFReport } = require("../utils/pdfGenerator");
+const Interview = require("../models/interview");
+const { createChatCompletion } = require("../utils/openaiClient");
+const { cleanMarkdown } = require("../utils/cleanMarkdown");
 
 exports.generateAnalysis = async (req, res) => {
   try {
     const { feedback, interviewId, formData } = req.body;
-    const {
-      name,
-      role,
-      company,
-      experience,
-      prefferedLanguage,
-      codingRound,
-    } = formData || {};
+    const { name, role, company, experience, prefferedLanguage, codingRound } =
+      formData || {};
 
     const systemContext =
       "Assume the role of an experienced interviewer with 20+ years of experience. Provide a detailed markdown interview analysis report.";
 
-      const prompt = `
+    const prompt = `
       Using the following candidate details and performance feedback, provide a **complete markdown report**.
-      
+
       👤 **Candidate Details**
       - Name: ${name}
       - Role: ${role}
@@ -31,10 +25,10 @@ exports.generateAnalysis = async (req, res) => {
       - Experience: ${experience} years
       - Preferred Language: ${prefferedLanguage}
       - Interview Type: ${codingRound ? "Technical" : "Behavioural"}
-      
+
       📝 **Feedback Summary**
       ${feedback}
-      
+
       📄 **Generate the following sections in Markdown:**
       1. Areas Tested and Scores: List each technical area (e.g., Data Structures, Algorithms, System Design, etc.) with an individual score out of 10.
       2. Overall Score: Provide an overall score out of 10.
@@ -43,7 +37,7 @@ exports.generateAnalysis = async (req, res) => {
       5. Areas for Improvement
       6. Interviewer Comments
       7. Additional Comments
-      8. Technical Topic-wise Score Data 
+      8. Technical Topic-wise Score Data
       `;
     // Get AI response
     const content = await createChatCompletion(systemContext, prompt);
@@ -51,7 +45,9 @@ exports.generateAnalysis = async (req, res) => {
 
     if (!content) {
       console.error("OpenAI response missing content.");
-      return res.status(500).json({ error: "OpenAI response invalid or empty." });
+      return res
+        .status(500)
+        .json({ error: "OpenAI response invalid or empty." });
     }
 
     const markdown = cleanMarkdown(content);
@@ -61,21 +57,21 @@ exports.generateAnalysis = async (req, res) => {
     const scoreMatch = markdown.match(/Overall Score: (\d+(?:\.\d+)?)/i);
     if (!scoreMatch) {
       console.error("Overall Score not found in markdown.");
-      return res.status(500).json({ error: "Could not extract score from analysis." });
+      return res
+        .status(500)
+        .json({ error: "Could not extract score from analysis." });
     }
     const overallScore = scoreMatch[1];
     console.log("Extracted Score:", overallScore);
 
     // Generate the PDF
-    const pdfPath = await generatePDFReport(markdown, overallScore);
-
+    const pdfPath = await generatePDFReport(markdown, overallScore, formData);
 
     // Upload PDF to Cloudinary
     const uploadResult = await cloudinary.uploader.upload(pdfPath, {
       resource_type: "auto", // Automatically detect file type (pdf in this case)
       public_id: `interviews/interview-report-${Date.now()}`, // Optional public ID for the file
     });
-
 
     // Get Cloudinary URL
     const cloudinaryUrl = uploadResult.secure_url;
@@ -88,7 +84,7 @@ exports.generateAnalysis = async (req, res) => {
     const updatedInterview = await Interview.findByIdAndUpdate(
       interviewId,
       { pdfReport: cloudinaryUrl, score: overallScore },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedInterview) {
