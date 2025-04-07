@@ -22,18 +22,18 @@ const userSchema = new Schema({
     type: String,
     default: "",
   },
-  isAdmin : {
-    type : Boolean, 
-    default : false,
+  isAdmin: {
+    type: Boolean,
+    default: false,
   },
   resumeUrl: {
     type: String, // Store the path to the resume file
-    default: null
+    default: null,
   },
-  atsScore:{
-    type:Number,
-    default:0
-  }
+  atsScore: {
+    type: Number,
+    default: 0,
+  },
 });
 
 //static signup method
@@ -68,16 +68,13 @@ userSchema.statics.signup = async function (username, email, password) {
   return user;
 };
 
-userSchema.statics.updatePassword = async function ( email, password) {
+userSchema.statics.updatePassword = async function (email, password) {
   //validation
   if (!email || !password) {
     throw Error("All fields must be filled");
   }
   if (!validator.isEmail(email)) {
     throw Error("Email is not valid");
-  }
-  if (!validator.isStrongPassword(password)) {
-    throw Error("Password not strong enough");
   }
 
   //confirming no duplicates
@@ -91,7 +88,7 @@ userSchema.statics.updatePassword = async function ( email, password) {
   const hash = await bcrypt.hash(password, salt);
 
   //creating user
-  const user = await this.findByIdAndUpdate(exists._id , { password: hash });
+  const user = await this.findByIdAndUpdate(exists._id, { password: hash });
   return user;
 };
 

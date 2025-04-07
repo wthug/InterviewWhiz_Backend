@@ -1,20 +1,30 @@
-const {mailCache} = require("../cache/mailcache");
+const { mailCache } = require("../cache/mailcache");
 const User = require("../models/userModel");
 
 const mailVerify = async (req, res) => {
-  const { uniqueString } = req.params;
+  try {
+    const { uniqueString } = req.params;
 
-  // const user = await User.findOne({ uniqueString });
-  const { username, email, password } = mailCache.get(uniqueString);
+    const cachedUser = mailCache.get(uniqueString);
 
-  const user = await User.signup(username, email, password);
-  console.log(user)
-  if (user) {
-    res.status(201).send("Account creation was successful");
-  } else {
-    res.status(404).send("User not found");
+    if (!cachedUser) {
+      return res.status(404).send("Verification link expired or invalid");
+    }
+
+    const { username, email, password } = cachedUser;
+
+    const user = await User.signup(username, email, password);
+    console.log(user);
+
+    if (user) {
+      res.status(201).send("Account creation was successful");
+    } else {
+      res.status(500).send("Failed to create account");
+    }
+  } catch (err) {
+    console.error("Error in mail verification:", err);
+    res.status(500).send("Something went wrong during verification");
   }
 };
-
 
 module.exports = mailVerify;
