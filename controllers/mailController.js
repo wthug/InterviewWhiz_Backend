@@ -23,7 +23,7 @@ const mailVerify = async (req, res) => {
     }
   } catch (err) {
     console.error("Error in mail verification:", err);
-    res.status(500).send({ error: error.message });
+    res.status(500).send({ error: err.message });
   }
 };
 
