@@ -72,32 +72,41 @@ const generatePDFReport = async (reportText, score, formData = {}) => {
 
   // === SCORE CHART SECTION ===
   const topicScoresSection = reportText.match(
-    /Technical Topic-wise Score Data\s*([\s\S]*)/i,
+    /Technical Topic-wise Score Data\s*([\s\S]*)/i
   );
+  
   let topicScores = {};
-
+  
+  // Helper function to clean label text
+  const cleanText = (text) => text.replace(/[^\x00-\x7F]/g, "").trim();
+  
   if (topicScoresSection) {
     const lines = topicScoresSection[1]
       .split("\n")
       .filter((line) => line.includes(":"));
+    
     lines.forEach((line) => {
-      const [topic, scoreStr] = line.split(":").map((x) => x.trim());
-      const scoreVal = parseFloat(scoreStr);
-      if (!isNaN(scoreVal)) {
+      const [rawTopic, rawScore] = line.split(":");
+      const topic = cleanText(rawTopic);
+      const scoreVal = parseFloat(rawScore);
+      if (!isNaN(scoreVal) && topic.length > 0) {
         topicScores[topic] = scoreVal;
       }
     });
   }
-
+  
   if (Object.keys(topicScores).length > 0) {
+    const labels = Object.keys(topicScores).map((label) => String(label));
+    const data = Object.values(topicScores).map((val) => Number(val));
+  
     const chartBuffer = await chartCanvas.renderToBuffer({
       type: "bar",
       data: {
-        labels: Object.keys(topicScores),
+        labels: labels,
         datasets: [
           {
             label: "Score",
-            data: Object.values(topicScores),
+            data: data,
             backgroundColor: "rgba(54, 162, 235, 0.6)",
             borderColor: "rgba(54, 162, 235, 1)",
             borderWidth: 1,
@@ -105,26 +114,47 @@ const generatePDFReport = async (reportText, score, formData = {}) => {
         ],
       },
       options: {
+        responsive: false,
         scales: {
-          y: { beginAtZero: true, max: 10 },
+          y: {
+            beginAtZero: true,
+            max: 10,
+            ticks: {
+              precision: 0,
+            },
+          },
+          x: {
+            ticks: {
+              autoSkip: false,
+              maxRotation: 45,
+              minRotation: 0,
+            },
+          },
         },
         plugins: {
           title: {
             display: true,
             text: "Topic-wise Performance",
+            font: {
+              size: 16,
+            },
+          },
+          legend: {
+            display: true,
+            position: "top",
           },
         },
       },
     });
-
+  
     const chartBase64 = chartBuffer.toString("base64");
-
+  
     doc.addPage();
-    doc.setFont("times", "bold");
+    doc.setFont("helvetica", "bold"); // Use safer font
     doc.setFontSize(16);
     doc.text("Visual Performance Analysis", xPos, 20);
     doc.addImage(chartBase64, "PNG", xPos, 30, 180, 90);
-  }
+  }  
 
   // === SIGNATURE SECTION ===
   doc.addPage();
