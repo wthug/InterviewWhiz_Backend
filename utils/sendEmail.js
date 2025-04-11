@@ -28,7 +28,7 @@ async function sendMail(email, uniqueString) {
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background-color: #f9f9f9; margin: 0; padding: 0;">
   <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
     <div style="background: linear-gradient(135deg, #0062cc 0%, #0096ff 100%); padding: 30px 20px; text-align: center;">
-      <div style="font-size: 28px; font-weight: bold; color: white; letter-spacing: 1px;">Interview <span style="color: #ffe74c;">Whiz</span></div>
+      <div style="font-size: 28px; font-weight: bold; color: white; letter-spacing: 1px;">Mock<span style="color: #ffe74c;">Xpert</span></div>
       
     </div>
     
