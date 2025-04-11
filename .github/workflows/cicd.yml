@@ -61,3 +61,6 @@ jobs:
           -e OPENAI_API_URL='${{secrets.OPENAI_API_URL}}' \
           -e IP='${{env.HOST_IP}}' \
           wthug/interviewviz-nodejs
+
+      - name: Prune dangling images
+        run: docker image prune -f
