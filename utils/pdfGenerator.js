@@ -2,10 +2,25 @@ const { jsPDF } = require("jspdf");
 const path = require("path");
 const fs = require("fs");
 const { ChartJSNodeCanvas } = require("chartjs-node-canvas");
+const { registerFont } = require("canvas");
 
+// === Register Custom Font ===
+registerFont(
+  path.join(__dirname, "../public/fonts/OpenSans-Regular.ttf"),
+  { family: "Open Sans" }
+);
+
+// === Create ChartJSNodeCanvas Instance with Custom Font ===
 const width = 800;
 const height = 400;
-const chartCanvas = new ChartJSNodeCanvas({ width, height });
+const chartCanvas = new ChartJSNodeCanvas({
+  width,
+  height,
+  chartCallback: (ChartJS) => {
+    ChartJS.defaults.font.family = "Open Sans";
+    ChartJS.defaults.font.size = 12;
+  },
+});
 
 const generatePDFReport = async (reportText, score, formData = {}, topicScores = {}) => {
   const {
@@ -74,7 +89,9 @@ const generatePDFReport = async (reportText, score, formData = {}, topicScores =
   console.log("🧪 topicScores passed to PDF:", topicScores);
   if (Object.keys(topicScores).length > 0) {
     try {
-      const labels = Object.keys(topicScores);
+      const labels = Object.keys(topicScores).map(label =>
+        label.replace(/[^\x20-\x7E]/g, "").trim()
+      );
       const data = Object.values(topicScores).map((v) => Number(v));
 
       const chartBuffer = await chartCanvas.renderToBuffer({
@@ -104,6 +121,9 @@ const generatePDFReport = async (reportText, score, formData = {}, topicScores =
                 autoSkip: false,
                 maxRotation: 45,
                 minRotation: 0,
+                font: {
+                  size: 10,
+                },
               },
             },
           },
