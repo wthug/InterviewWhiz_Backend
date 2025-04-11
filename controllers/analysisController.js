@@ -1,4 +1,4 @@
-const fs = require("fs"); // Add this line to import fs
+const fs = require("fs");
 const path = require("path");
 const cloudinary = require("../lib/cloudinary");
 const { generatePDFReport } = require("../utils/pdfGenerator");
@@ -16,82 +16,102 @@ exports.generateAnalysis = async (req, res) => {
       "Assume the role of an experienced interviewer with 20+ years of experience. Provide a detailed markdown interview analysis report.";
 
     const prompt = `
-      Using the following candidate details and performance feedback, provide a **complete markdown report**.
+Using the following candidate details and performance feedback, provide a complete markdown interview report.
 
-      👤 **Candidate Details**
-      - Name: ${name}
-      - Role: ${role}
-      - Company: ${company}
-      - Experience: ${experience} years
-      - Preferred Language: ${prefferedLanguage}
-      - Interview Type: ${codingRound ? "Technical" : "Behavioural"}
+👤 Candidate Details
+- Name: ${name}
+- Role: ${role}
+- Company: ${company}
+- Experience: ${experience} years
+- Preferred Language: ${prefferedLanguage}
+- Interview Type: ${codingRound ? "Technical" : "Behavioural"}
 
-      📝 **Feedback Summary**
-      ${feedback}
+📝 Feedback Summary
+${feedback}
 
-      📄 **Generate the following sections in Markdown:**
-      1. Areas Tested and Scores: List each technical area (e.g., Data Structures, Algorithms, System Design, etc.) with an individual score out of 10.
-      2. Overall Score: Provide an overall score out of 10.
-      3. Strength Topics
-      4. Weakness Topics
-      5. Areas for Improvement
-      6. Interviewer Comments
-      7. Additional Comments
-      8. Technical Topic-wise Score Data
-      `;
-    // Get AI response
+📄 Generate the following sections in Markdown:
+1. Areas Tested and Scores (each topic out of 10)
+2. Overall Score (out of 10)
+3. Strength Topics
+4. Weakness Topics
+5. Areas for Improvement
+6. Interviewer Comments
+7. Additional Comments
+
+📦 At the end, return a JSON object with topic-wise scores in this format with headin Topic-wise Score:
+\`\`\`json
+{
+  "Data Structures": 7,
+  "Algorithms": 9,
+  "System Design": 6
+}
+\`\`\`
+`;
+
     const content = await createChatCompletion(systemContext, prompt);
-    console.log("Response from AI:", content);
-
     if (!content) {
-      console.error("OpenAI response missing content.");
-      return res
-        .status(500)
-        .json({ error: "OpenAI response invalid or empty." });
+      return res.status(500).json({ error: "OpenAI response is empty." });
     }
 
     const markdown = cleanMarkdown(content);
-    console.log("Cleaned Markdown:", markdown);
+    console.log("📄 Cleaned Markdown:", markdown);
 
-    // Extract overall score
-    const scoreMatch = markdown.match(/Overall Score: (\d+(?:\.\d+)?)/i);
+    const scoreMatch = markdown.match(/Overall Score\s*[:\-]?\s*(\d+(\.\d+)?)/i);
     if (!scoreMatch) {
-      console.error("Overall Score not found in markdown.");
-      return res
-        .status(500)
-        .json({ error: "Could not extract score from analysis." });
+      return res.status(500).json({ error: "Could not extract overall score." });
     }
-    const overallScore = scoreMatch[1];
-    console.log("Extracted Score:", overallScore);
+    const overallScore = parseFloat(scoreMatch[1]);
 
-    // Generate the PDF
-    const pdfPath = await generatePDFReport(markdown, overallScore, formData);
+    // Robust JSON extraction
+    let topicScores = {};
 
-    // Upload PDF to Cloudinary
+    const jsonRegex = /```json\s*({[\s\S]*?})\s*```/i;
+    const fallbackJsonRegex = /({[\s\S]*})$/; // fallback for AI returning plain JSON
+
+    let rawJson = null;
+
+    const jsonMatch = markdown.match(jsonRegex);
+    if (jsonMatch && jsonMatch[1]) {
+      rawJson = jsonMatch[1];
+    } else {
+      const fallbackMatch = markdown.match(fallbackJsonRegex);
+      if (fallbackMatch && fallbackMatch[1]) {
+        rawJson = fallbackMatch[1];
+      }
+    }
+
+    if (rawJson) {
+      try {
+        topicScores = JSON.parse(rawJson.trim());
+        console.log("✅ Extracted topicScores JSON:", topicScores);
+      } catch (err) {
+        console.error("❌ Failed to parse topicScores JSON:", err);
+      }
+    } else {
+      console.warn("⚠️ No topicScores JSON found in markdown.");
+    }
+
+
+    const pdfPath = await generatePDFReport(markdown, overallScore, formData, topicScores);
+
     const uploadResult = await cloudinary.uploader.upload(pdfPath, {
-      resource_type: "auto", // Automatically detect file type (pdf in this case)
-      public_id: `interviews/interview-report-${Date.now()}`, // Optional public ID for the file
+      resource_type: "auto",
+      public_id: `interviews/interview-report-${Date.now()}`,
     });
 
-    // Get Cloudinary URL
     const cloudinaryUrl = uploadResult.secure_url;
-    console.log("Uploaded PDF URL:", cloudinaryUrl);
-
-    // Delete the local PDF file after upload
     fs.unlinkSync(pdfPath);
 
-    // Update Interview document with PDF URL and score
     const updatedInterview = await Interview.findByIdAndUpdate(
       interviewId,
       { pdfReport: cloudinaryUrl, score: overallScore },
-      { new: true },
+      { new: true }
     );
 
     if (!updatedInterview) {
       return res.status(404).json({ error: "Interview not found." });
     }
 
-    // Return the Cloudinary URL and interview ID
     return res.status(200).json({
       message: "Report generated and uploaded successfully.",
       pdfUrl: cloudinaryUrl,

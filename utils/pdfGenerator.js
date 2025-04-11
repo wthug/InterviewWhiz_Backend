@@ -7,7 +7,7 @@ const width = 800;
 const height = 400;
 const chartCanvas = new ChartJSNodeCanvas({ width, height });
 
-const generatePDFReport = async (reportText, scoreOverride = null, formData = {}) => {
+const generatePDFReport = async (reportText, score, formData = {}, topicScores = {}) => {
   const {
     name = "N/A",
     role = "N/A",
@@ -17,30 +17,6 @@ const generatePDFReport = async (reportText, scoreOverride = null, formData = {}
     codingRound = false,
   } = formData;
 
-  // === Extract Overall Score ===
-  let overallScore = scoreOverride;
-  if (overallScore === null) {
-    const match = reportText.match(/Overall Score\s*[:\-]?\s*(\d+(\.\d+)?)(?:\/10)?/i);
-    overallScore = match ? parseFloat(match[1]) : "N/A";
-  }
-
-  // === Extract Topic-wise Scores ===
-  const topicScores = {};
-
-  const topicScoreLines = reportText
-    .split("\n")
-    .filter((line) => /^\s*-\s*[^:]+:\s*\d+\/10/.test(line));
-
-  topicScoreLines.forEach((line) => {
-    const [rawTopic, rawScore] = line.replace(/^\s*-\s*/, "").split(":");
-    const topic = rawTopic.trim();
-    const scoreVal = parseFloat(rawScore.trim().replace("/10", ""));
-    if (!isNaN(scoreVal)) {
-      topicScores[topic] = scoreVal;
-    }
-  });
-
-  // === Setup PDF ===
   const doc = new jsPDF();
   const maxWidth = 180;
   const xPos = 10;
@@ -55,7 +31,7 @@ const generatePDFReport = async (reportText, scoreOverride = null, formData = {}
   // === OVERALL SCORE ===
   doc.setFont("helvetica", "normal");
   doc.setFontSize(14);
-  doc.text(`Overall Score: ${overallScore}/10`, xPos, yPos);
+  doc.text(`Overall Score: ${score}/10`, xPos, yPos);
   yPos += 10;
 
   // === BASIC DETAILS ===
@@ -77,12 +53,12 @@ const generatePDFReport = async (reportText, scoreOverride = null, formData = {}
   yPos += 4;
 
   // === FEEDBACK SECTION ===
-  doc.setFont("courier", "bold");
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   doc.text("Feedback Analysis", xPos, yPos);
   yPos += 8;
 
-  doc.setFont("courier", "normal");
+  doc.setFont("helvetica", "normal");
   doc.setFontSize(12);
   const feedbackLines = doc.splitTextToSize(reportText, maxWidth);
   feedbackLines.forEach((line) => {
@@ -95,19 +71,20 @@ const generatePDFReport = async (reportText, scoreOverride = null, formData = {}
   });
 
   // === CHART SECTION ===
+  console.log("🧪 topicScores passed to PDF:", topicScores);
   if (Object.keys(topicScores).length > 0) {
     try {
       const labels = Object.keys(topicScores);
-      const data = Object.values(topicScores);
+      const data = Object.values(topicScores).map((v) => Number(v));
 
       const chartBuffer = await chartCanvas.renderToBuffer({
         type: "bar",
         data: {
-          labels: labels,
+          labels,
           datasets: [
             {
               label: "Score",
-              data: data,
+              data,
               backgroundColor: "rgba(54, 162, 235, 0.6)",
               borderColor: "rgba(54, 162, 235, 1)",
               borderWidth: 1,
@@ -120,7 +97,7 @@ const generatePDFReport = async (reportText, scoreOverride = null, formData = {}
             y: {
               beginAtZero: true,
               max: 10,
-              ticks: { precision: 0 },
+              ticks: { stepSize: 1, precision: 0 },
             },
             x: {
               ticks: {
@@ -137,8 +114,7 @@ const generatePDFReport = async (reportText, scoreOverride = null, formData = {}
               font: { size: 16 },
             },
             legend: {
-              display: true,
-              position: "top",
+              display: false,
             },
           },
         },
@@ -146,20 +122,14 @@ const generatePDFReport = async (reportText, scoreOverride = null, formData = {}
 
       const chartBase64 = chartBuffer.toString("base64");
 
-      if (chartBase64 && chartBase64.length > 0) {
-        doc.addPage();
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(16);
-        doc.text("Visual Performance Analysis", xPos, 20);
-        doc.addImage(chartBase64, "PNG", xPos, 30, 180, 90);
-      } else {
-        console.warn("⚠️ Chart base64 string is empty.");
-      }
+      doc.addPage();
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("Visual Performance Analysis", xPos, 20);
+      doc.addImage(chartBase64, "PNG", xPos, 30, 180, 90);
     } catch (err) {
-      console.error("❌ Error generating chart image:", err);
+      console.error("❌ Chart generation error:", err);
     }
-  } else {
-    console.warn("⚠️ No topic scores found. Skipping chart.");
   }
 
   // === SIGNATURE SECTION ===
