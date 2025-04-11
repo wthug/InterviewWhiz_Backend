@@ -134,7 +134,7 @@ exports.getOverallComments = async (req, res) => {
     }
 
     const systemPrompt =
-      "Assume the role of a recruiter. Provide overall comments on the resume below, such as its content quality, formatting, and technical relevance.";
+      "Assume the role of a recruiter. Provide overall comments on the resume below, such as its content quality, formatting, and technical relevancen and gives the reponse into two section Strength and Areas for Improvement.";
     const userPrompt = `Resume content: ${resumeUrl}`;
 
     const feedback = await createChatCompletion(systemPrompt, userPrompt);
