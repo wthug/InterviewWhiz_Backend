@@ -1,9 +1,10 @@
-const User = require("../models/userModel");
 const randString = require("../utils/randString");
-const {sendMail} = require("../utils/sendEmail");
+const { sendMail } = require("../utils/sendEmail");
 const { generateToken } = require("../utils/generateToken");
-const { mailCache} = require("../cache/mailcache");
+const { mailCache } = require("../cache/mailcache");
 const cloudinary = require("../lib/cloudinary");
+const validator = require("validator");
+const User = require("../models/userModel");
 
 //login user
 const loginUser = async (req, res) => {
@@ -23,7 +24,8 @@ const loginUser = async (req, res) => {
       profilePic: user.profilePic,
     });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.log("Error in login controller", error);
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -31,13 +33,25 @@ const loginUser = async (req, res) => {
 const signupUser = async (req, res) => {
   // console.log(ry);
   const { username, email, password } = req.body;
-
-  const uniqueString = randString();
-
-  mailCache.set(uniqueString, { username, email, password });
-
   try {
-    
+    if (!username || !email || !password) {
+      throw Error("All fields must be filled");
+    }
+    if (!validator.isEmail(email)) {
+      throw Error("Email is not valid");
+    }
+    if (!validator.isStrongPassword(password)) {
+      throw Error("Password not strong enough");
+    }
+
+    const exists = await User.findOne({ email });
+    if (exists) {
+      throw Error("Email already in use");
+    }
+    const uniqueString = randString();
+
+    mailCache.set(uniqueString, { username, email, password });
+
     const status = await sendMail(email, uniqueString);
     // console.log("verification status", status);
     console.log(status);
@@ -46,7 +60,7 @@ const signupUser = async (req, res) => {
     }
   } catch (error) {
     console.log(error.message);
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -90,13 +104,15 @@ const updateAtsScore = async (req, res) => {
     const userId = req.user._id;
 
     if (atsScore === undefined || isNaN(atsScore)) {
-      return res.status(400).json({ message: "ATS Score must be a valid number" });
+      return res
+        .status(400)
+        .json({ message: "ATS Score must be a valid number" });
     }
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { atsScore },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).json(updatedUser);
@@ -115,4 +131,11 @@ const checkAuth = async (req, res) => {
   }
 };
 
-module.exports = { loginUser, signupUser, logout, checkAuth, updateProfile, updateAtsScore};
+module.exports = {
+  loginUser,
+  signupUser,
+  logout,
+  checkAuth,
+  updateProfile,
+  updateAtsScore,
+};

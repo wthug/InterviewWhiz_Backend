@@ -1,5 +1,6 @@
 const { mailCache } = require("../cache/mailcache");
 const User = require("../models/userModel");
+const validator = require("validator");
 
 const mailVerify = async (req, res) => {
   try {
@@ -21,9 +22,9 @@ const mailVerify = async (req, res) => {
     } else {
       res.status(500).send("Failed to create account");
     }
-  } catch (err) {
-    console.error("Error in mail verification:", err);
-    res.status(500).send(err.message);
+  } catch (error) {
+    console.error("Error in mail verification:", error);
+    res.status(400).json({ message: error.message });
   }
 };
 
